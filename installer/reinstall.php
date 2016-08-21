@@ -1,65 +1,30 @@
 <?php
 /**
- * Quick and dirty Kimai installer script.
+ * A simple command line installer for Kimai.
+ * Could be used for setting up demo websites or development environments.
  *
  * Find the newest version at: https://github.com/kimai/scripts
  */
 
-// THIS NEEDS TO BE CHANGED TO YOUR ENVIROMENT
-define('KIMAI_DOMAIN', 'http://www.example.com');
-define('KIMAI_TIMEZONE', 'Europe/Berlin');
-
-// No need to configure anything below this point
-if (!defined('KIMAI_DOMAIN') || empty(KIMAI_DOMAIN) || KIMAI_DOMAIN == 'http://www.example.com') {
-	die('Please adjust your KIMAI_DOMAIN setting in: ' . __FILE__ . PHP_EOL);
-}
-
-// Ahhhhhhh, broken by design ... things must be cleared up ...
-passthru('chmod -R 777 htdocs/temporary/');
-passthru('chmod -R 777 htdocs/includes/');
-
-// load configuration in the format Kimai uses it as well, see includes/autoconf.php in your running installation
-include 'autoconf.php';
-
-// ATTENTION, THIS IS IMPORTANT AND DANGEROUS:
-// This nasty little command will drop ALL tables within the configured database, make sure you don't have any other stuff in there
-echo 'Resetting database' . PHP_EOL;
-$sql = 'mysql --user='.$server_username.' --password=' .$server_password . ' --host=localhost --database=' . $server_database . ' -e "show tables" | grep -v Tables_in | grep -v "+" | gawk \'{print "drop table " $1 ";"}\' | mysql --user='.$server_username.' --password=' .$server_password . ' --host=localhost --database=' . $server_database;
-passthru($sql);
-
-echo 'Installing database' . PHP_EOL;
-echo kimaiInstall(
-	KIMAI_DOMAIN . '/installer/processor.php',
-	array(
-		'axAction' => 'write_config',
-		'hostname' => $server_hostname,
-		'username' => $server_username,
-		'password' => $server_password,
-		'lang'     => $language,
-		'prefix'   => $server_prefix,
-		'database' => $server_database
-	)
+$config = array(
+    'server_hostname' => 'localhost',
+    'server_database' => 'kimai',
+    'server_username' => 'kimai',
+    'server_password' => 'kimai',
+    'server_prefix' => 'kimai_',
+    'language' => 'en',
+    'password_salt' => '1xO4dlmSwk21rASvp7S50',
 );
 
-echo 'Configuring KIMAI' . PHP_EOL;
-echo kimaiInstall(
-	KIMAI_DOMAIN . '/installer/install.php',
-	array(
-		'accept'   => 1,
-		'timezone' => KIMAI_TIMEZONE
-	)
-);
+require __DIR__ . '/KimaiInstaller.php';
 
-echo 'DONE, enjoy Kimai at ' . KIMAI_DOMAIN . PHP_EOL;
-
-// Call the installer script via CURL
-function kimaiInstall($url, $params)
-{
-	$kimaiUrl = $url . '?' . http_build_query($params);
-	$ch = curl_init();
-	curl_setopt($ch, CURLOPT_URL, $kimaiUrl);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	$output = curl_exec($ch);
-	curl_close($ch);
-	return $output;
-}
+$installer = new KimaiInstaller();
+$installer
+    ->setBaseUrl('http://www.example.com')
+    ->setConfig($config)
+    ->setLogger(function ($msg) {
+        echo $msg . PHP_EOLD;
+    })
+    ->setTimezone('Europe/Berlin')
+    ->setBasePath('htdocs/')
+    ->execute();

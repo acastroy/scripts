@@ -18,13 +18,18 @@ $config = array(
 
 require __DIR__ . '/KimaiInstaller.php';
 
-$installer = new KimaiInstaller();
-$installer
-    ->setBaseUrl('http://www.example.com')
-    ->setConfig($config)
-    ->setLogger(function ($msg) {
-        echo $msg . PHP_EOLD;
-    })
-    ->setTimezone('Europe/Berlin')
-    ->setBasePath('htdocs/')
-    ->execute();
+try {
+
+    $installer = new KimaiInstaller();
+    $installer
+        ->setBaseUrl('http://www.example.com')
+        ->setConfig($config)
+        ->setLogger(function ($msg) {
+            echo $msg . PHP_EOL;
+        })
+        ->setTimezone('Europe/Berlin')
+        ->setBasePath('htdocs/')
+        ->execute();
+} catch (Exception $ex) {
+    die('INSTALLATION FAILED: ' . $ex->getMessage() . PHP_EOL);
+}

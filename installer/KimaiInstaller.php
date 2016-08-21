@@ -158,8 +158,6 @@ class KimaiInstaller
      */
     protected function fail($message)
     {
-        $this->log($message);
-
         throw new Exception($message);
     }
 
@@ -292,6 +290,8 @@ class KimaiInstaller
     public function execute()
     {
         $this->validate();
+
+        $this->log('Kimai installer v0.2 by Kevin Papst');
 
         $this->install_setFilePermission()
             ->install_resetDatabase()

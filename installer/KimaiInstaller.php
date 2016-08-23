@@ -14,10 +14,6 @@ class KimaiInstaller
     /**
      * @var string
      */
-    protected $timezone = null;
-    /**
-     * @var string
-     */
     protected $domain = null;
     /**
      * @var Callable
@@ -51,16 +47,6 @@ class KimaiInstaller
     public function setBaseUrl($url)
     {
         $this->domain = $url;
-        return $this;
-    }
-
-    /**
-     * @param string $timezone
-     * @return $this
-     */
-    public function setTimezone($timezone)
-    {
-        $this->timezone = $timezone;
         return $this;
     }
 
@@ -142,7 +128,8 @@ class KimaiInstaller
             'server_password',
             'server_prefix',
             'language',
-            'password_salt'
+            'password_salt',
+            'timezone'
         );
 
         foreach ($required as $key) {
@@ -272,7 +259,7 @@ class KimaiInstaller
         $database = $this->config['server_database'];
         $language = $this->config['language'];
         $prefix = $this->config['server_prefix'];
-        $timezone = $this->timezone;
+        $timezone = $this->config['timezone'];
 
         $this->callInstaller(
             '/installer/processor.php',
@@ -302,7 +289,7 @@ class KimaiInstaller
             '/installer/install.php',
             array(
                 'accept'   => 1,
-                'timezone' => $this->timezone
+                'timezone' => $this->config['timezone']
             )
         );
         

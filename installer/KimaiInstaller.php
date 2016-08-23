@@ -178,18 +178,16 @@ class KimaiInstaller
      * @param $params
      * @return mixed
      */
-    protected function kimaiInstall($url, $params)
+    protected function callInstaller($url, $params)
     {
-        $kimaiUrl = $url . '?' . http_build_query($params);
+        $kimaiUrl = $this->domain . $url . '?' . http_build_query($params);
 
-        $output = $kimaiUrl;
-/*
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $kimaiUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $output = curl_exec($ch);
         curl_close($ch);
-*/
+
         $this->log($output);
     }
 
@@ -200,14 +198,14 @@ class KimaiInstaller
     {
         $this->log('Setting file permissions');
 
-//        passthru('chmod -R 777 ' . $this->getFileName('temporary/'));
-//        passthru('chmod -R 777 ' . $this->getFileName('includes/'));
+        passthru('chmod -R 777 ' . $this->getFileName('temporary/'));
+        passthru('chmod -R 777 ' . $this->getFileName('includes/'));
 
         return $this;
     }
 
     /**
-     * ATTENTION, THIS IS IMPORTANT AND DANGEROUS:
+     * ATTENTION, THIS IS DANGEROUS:
      * This command will drop ALL tables within the configured database, make sure you don't have any other stuff in there!
      *
      * @return $this
@@ -219,19 +217,34 @@ class KimaiInstaller
         $user = $this->config['server_username'];
         $password = $this->config['server_password'];
         $database = $this->config['server_database'];
+        $hostname = $this->config['server_hostname'];
+        $prefix = $this->config['server_prefix'];
 
+        // GAWK is not a default command, so we use another command
+        /*
         $sql = 'mysql --user=' . $user .
                     ' --password=' . $password .
-                    ' --host=localhost ' .
+                    ' --host=' . $hostname .
                     ' --database=' . $database .
                     ' -e "show tables" | grep -v Tables_in | grep -v "+" | gawk \'{print "drop table " $1 ";"}\' | ' .
                     'mysql --user=' . $user .
                          ' --password=' . $password .
-                         ' --host=localhost' .
+                         ' --host=' . $hostname .
                          ' --database=' . $database;
-        $this->log($sql);
+        */
+        
+        $sql = 'mysqldump --user=' . $user .
+                        ' --password=' . $password .
+                        ' --host=' . $hostname .
+                        ' --databases ' . $database .
+                        ' --add-drop-table --no-data | grep ^DROP | grep ' . $prefix .
+                    ' | mysql --user=' . $user .
+                            ' --password=' . $password .
+                            ' --host=' . $hostname .
+                            ' --database=' . $database;
 
-//        passthru($sql);
+        passthru($sql);
+
         return $this;
     }
 
@@ -249,8 +262,8 @@ class KimaiInstaller
         $language = $this->config['language'];
         $prefix = $this->config['server_prefix'];
 
-        $this->kimaiInstall(
-            $this->domain . '/installer/processor.php',
+        $this->callInstaller(
+            '/installer/processor.php',
             array(
                 'axAction' => 'write_config',
                 'hostname' => $host,
@@ -272,8 +285,8 @@ class KimaiInstaller
     {
         $this->log('Configuring KIMAI');
 
-        $this->kimaiInstall(
-            $this->domain . '/installer/install.php',
+        $this->callInstaller(
+            '/installer/install.php',
             array(
                 'accept'   => 1,
                 'timezone' => $this->timezone

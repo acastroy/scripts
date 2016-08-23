@@ -17,7 +17,7 @@ For the sake of this documentation, we assume that:
 - Create the directory /var/www/kimai/htdocs/
 - Copy the files autoconf.php / install.sh and reinstall.php to /var/www/kimai/
 - Adjust autoconf.php to your environment (database connection!)
-- Adjust the setting KIMAI_DOMAIN and KIMAI_TIMEZONE in reinstall.php to match your environment
+- Adjust the configuration settings in reinstall.php to match your environment
 - Call ./install.sh
 - Have fun :-)
 

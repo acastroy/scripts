@@ -198,8 +198,19 @@ class KimaiInstaller
     {
         $this->log('Setting file permissions');
 
-        passthru('chmod -R 777 ' . $this->getFileName('temporary/'));
-        passthru('chmod -R 777 ' . $this->getFileName('includes/'));
+        $temp = $this->getFileName('temporary/');
+        if (!is_writable($temp)) {
+            $this->fail('temporary/ directory is not writeable: ' . $temp);
+        } else {
+            passthru('chmod -R 777 ' . $temp);
+        }
+
+        $includes = $this->getFileName('includes/');
+        if (!is_writable($includes)) {
+            $this->fail('includes/ directory is not writeable: ' . $includes);
+        } else {
+            passthru('chmod -R 777 ' . $includes);
+        }
 
         return $this;
     }
@@ -261,6 +272,7 @@ class KimaiInstaller
         $database = $this->config['server_database'];
         $language = $this->config['language'];
         $prefix = $this->config['server_prefix'];
+        $timezone = $this->timezone;
 
         $this->callInstaller(
             '/installer/processor.php',
@@ -271,7 +283,8 @@ class KimaiInstaller
                 'password' => $password,
                 'lang'     => $language,
                 'prefix'   => $prefix,
-                'database' => $database
+                'database' => $database,
+                'timezone' => $timezone
             )
         );
         

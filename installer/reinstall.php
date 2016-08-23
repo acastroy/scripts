@@ -14,7 +14,9 @@ $config = array(
 	'server_prefix' => 'kimai_',
 	'language' => 'en',
 	'password_salt' => '1xO4dlmSwk21rASvp7S50',
-	'timezone' => 'Europe/Berlin'
+	'timezone' => 'Europe/Berlin',
+	'path' => 'htdocs/',
+	'url' => 'http://www.example.com',
 );
 
 if (file_exists(__DIR__ . '/config.local.php')) {
@@ -28,13 +30,14 @@ try {
 
 	$installer = new KimaiInstaller();
 	$installer
-        ->setBaseUrl('http://www.example.com')
+		->setBaseUrl($config['url'])
 		->setConfig($config)
 		->setLogger(function ($msg) {
 			echo $msg . PHP_EOL;
 		})
-        ->setBasePath('htdocs/')
+		->setBasePath($config['path'])
 		->execute();
+
 } catch (Exception $ex) {
 	die('INSTALLATION FAILED: ' . $ex->getMessage() . PHP_EOL);
 }
